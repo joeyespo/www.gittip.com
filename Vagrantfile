@@ -37,5 +37,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   eos
 
   # Create local environment
-  config.vm.provision :shell, :inline => "cd #{PROJECT_DIRECTORY} && make local.env"
+  config.vm.provision :shell, :inline => <<-eos
+    cd #{PROJECT_DIRECTORY}
+    if [ ! -f local.env ]; then
+      make local.env
+      echo DATABASE_URL=#{DATABASE_URL} >> local.env
+    fi
+  eos
 end
