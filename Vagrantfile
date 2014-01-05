@@ -1,30 +1,23 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-Vagrant::Config.run do |config|
-    config.vm.box = "precise64"
-    config.vm.box_url = "http://files.vagrantup.com/precise64.box"
-    config.vm.forward_port 8537, 8537
-    config.vm.customize([
-        'setextradata',
-        :id,
-        'VBoxInternal2/SharedFoldersEnableSymlinksCreate/v-root',
-        '1'
-    ])
+# Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
+VAGRANTFILE_API_VERSION = "2"
 
-    config.vm.customize ["modifyvm", :id,
-        "--natdnshostresolver1", "on",
-        "--memory", "1024"]
+PROJECT_DIRECTORY = 'www.gittip.com'
+DATABASE_URL = 'postgres://gittip:gittip@localhost:5432/gittip'
 
-    config.vm.provision :puppet do |puppet|
-        puppet.module_path = "puppet/modules"
-        puppet.manifests_path = "puppet/manifests"
-        puppet.manifest_file  = "gittip.pp"
-        puppet.facter = {"fqdn" => "precise64"}
-    end
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  config.vm.box = "precise64"
+  config.vm.box_url = "http://files.vagrantup.com/precise64.box"
 
-    config.vm.provision :shell, :inline => "echo DATABASE_URL='postgres://gittip:gittip@localhost:5432/gittip' >> /vagrant/local.env"
-    config.vm.provision :shell, :inline => "cd /vagrant && make schema data"
-    config.vm.provision :shell,
-        :inline => 'echo "Provision complete!"; echo "To start the app, inside of \'vagrant ssh\', run \'cd /vagrant && make run\'"'
+  config.vm.synced_folder ".", "/home/vagrant/#{PROJECT_DIRECTORY}"
+  config.vm.network :forwarded_port, guest: 8537, host: 8537
+
+  # Install dependencies
+  config.vm.provision :shell, :inline => "sudo apt-get update"
+  config.vm.provision :shell, :inline => "sudo apt-get -y install make python-dev python-software-properties g++ git postgresql postgresql-contrib postgresql-server-dev-9.1"
+
+  # Create local environment
+  config.vm.provision :shell, :inline => "cd #{PROJECT_DIRECTORY} && make local.env"
 end
