@@ -18,6 +18,24 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.provision :shell, :inline => "sudo apt-get update"
   config.vm.provision :shell, :inline => "sudo apt-get -y install make python-dev python-software-properties g++ git postgresql postgresql-contrib postgresql-server-dev-9.1"
 
+  # Warn if Windows newlines are detected and try to fix the problem
+  config.vm.provision :shell, :inline => <<-eos
+    cd #{PROJECT_DIRECTORY}
+    if egrep -ql $'\r'\$ README.md; then
+        echo
+        echo '*** WARNING ***'
+        echo 'CRLF detected. You probably forgot to set autocrlf=false.'
+        echo 'You must fix the line endings manually with "git reset" before running "vagrant up" again.'
+        echo '***************'
+        echo
+
+        echo 'Running "git config core.autocrlf false"'
+        git config core.autocrlf false
+
+        exit 1
+    fi
+  eos
+
   # Create local environment
   config.vm.provision :shell, :inline => "cd #{PROJECT_DIRECTORY} && make local.env"
 end
