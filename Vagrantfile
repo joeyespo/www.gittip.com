@@ -1,24 +1,30 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-# Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
-VAGRANTFILE_API_VERSION = "2"
+# Versions
+UBUNTU_VERSION = 'lucid64'
+POSTGRES_VERSION = '9.3.2'
 
+# Project directory. This won't change.
 PROJECT_DIRECTORY = 'www.gittip.com'
 
-Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
-  config.vm.box = "precise64"
-  config.vm.box_url = "http://files.vagrantup.com/precise64.box"
+Vagrant.configure('2') do |config|
+  config.vm.box = 'lucid64'
+  config.vm.box_url = 'http://files.vagrantup.com/lucid64.box'
 
   # Sync the project directory and expose the app
-  config.vm.synced_folder ".", "/home/vagrant/#{PROJECT_DIRECTORY}"
+  config.vm.synced_folder '.', "/home/vagrant/#{PROJECT_DIRECTORY}"
   config.vm.network :forwarded_port, guest: 8537, host: 8537
 
   # TODO: Pin apt-get packages to the same versions Heroku uses
 
+  # Install Apt Repository for Postgres on Lucid
+  config.vm.provision :shell, :inline => "sudo sh -c 'echo \"deb http://apt.postgresql.org/pub/repos/apt/ lucid-pgdg main\" > /etc/apt/sources.list.d/pgdg.list'"
+  config.vm.provision :shell, :inline => "wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -"
+
   # Install dependencies
   config.vm.provision :shell, :inline => "sudo apt-get update"
-  config.vm.provision :shell, :inline => "sudo apt-get -y install make git build-essential python-software-properties postgresql-9.1 postgresql-contrib-9.1 libpq-dev python-dev"
+  config.vm.provision :shell, :inline => "sudo apt-get -y install make git build-essential python-software-properties postgresql-#{POSTGRES_VERSION} postgresql-contrib-#{POSTGRES_VERSION} libpq-dev python-dev"
 
   # Configure Postgres
   config.vm.provision :shell, :inline => "sudo su - postgres -c 'psql -U postgres -qf /home/vagrant/#{PROJECT_DIRECTORY}/create_db.sql'"
