@@ -23,7 +23,7 @@ Vagrant.configure('2') do |config|
   # TODO: Pin apt-get packages to the same versions Heroku uses
 
   # FUTURE: Remove this once we upgrade to Ubuntu 12+
-  config.vm.provision :shell, :inline => "sudo apt-get install python-software-properties"
+  config.vm.provision :shell, :inline => "sudo apt-get -y install python-software-properties"
   config.vm.provision :shell, :inline => "sudo add-apt-repository ppa:git-core/ppa"
   config.vm.provision :shell, :inline => "sudo add-apt-repository ppa:pitti/postgresql"
 
