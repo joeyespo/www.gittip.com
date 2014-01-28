@@ -7,7 +7,7 @@ env_bin := env/$(bin_dir)
 venv := "./vendor/virtualenv-1.9.1.py"
 
 env: $(env_bin)/swaddle
-	$(python)  $(venv)\
+	$(python) $(venv)\
 				--unzip-setuptools \
 				--prompt="[gittip] " \
 				--never-download \
