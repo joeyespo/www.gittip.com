@@ -16,6 +16,10 @@ Vagrant.configure('2') do |config|
   config.vm.synced_folder '.', "/home/vagrant/#{PROJECT_DIRECTORY}"
   config.vm.network :forwarded_port, guest: 8537, host: 8537
 
+  # Clean up OS-specific directories
+  # TODO: Use an environment variable to do set the location of a Vagrant-specific 'env' directory
+  config.vm.provision :shell, :inline => "cd #{PROJECT_DIRECTORY} && rm -rf env"
+
   # TODO: Pin apt-get packages to the same versions Heroku uses
 
   # Install Apt Repository for Postgres on Lucid
